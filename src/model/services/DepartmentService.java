@@ -7,6 +7,8 @@ import model.entities.Department;
 
 public class DepartmentService 
 {
+	//essa classe é responsavel por pegar as informações do banco de dados
+	//por enquanto ela esta mocada
 	public List<Department> findAll()
 	{
 		List<Department> list = new ArrayList<>();

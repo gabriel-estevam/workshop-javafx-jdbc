@@ -19,7 +19,9 @@ import model.services.DepartmentService;
 
 public class DepartmentListController implements Initializable
 {
-	private DepartmentService service;
+	private DepartmentService service; //declarado uma dependencia na classe
+	//essa dependencia tem ser injetada sem colocar a implementação da classe
+	//para isso foi cria o metodo setDepartmentService()
 	
 	@FXML
 	private TableView<Department> tableViewDepartment;
@@ -43,6 +45,9 @@ public class DepartmentListController implements Initializable
 	
 	public void setDepartmentService(DepartmentService service)
 	{
+		//criamos uma inversão de controle, isto é, essa função
+		//tem um injeção depencia, onde é passado como paramtro
+		//um tipo DepartMnetService
 		this.service = service;
 	}
 	
@@ -63,12 +68,17 @@ public class DepartmentListController implements Initializable
 	
 	public void updateTableView()
 	{
+		//metodo responsavel por acessar o serviço, carregar o departamento
+		//e mostrar os departamentos na obserableList
+		
 		if(service == null)
 		{
+			//caso o programador esqueça de passar o serviço, ele lança uma 
+			//excessão para que assim o programador perceba que esqueceu
 			throw new IllegalStateException("Service was null");
 		}
-		List<Department> list = service.findAll();
-		obsList = FXCollections.observableArrayList(list);
-		tableViewDepartment.setItems(obsList);
+		List<Department> list = service.findAll(); //pega os dados do banco
+		obsList = FXCollections.observableArrayList(list); //carrega os dados do banco na obslist
+		tableViewDepartment.setItems(obsList); //seta os valores da obslist na tela
 	}
 }
