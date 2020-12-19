@@ -57,7 +57,13 @@ public class DepartmentListController implements Initializable
 		 * Em seguida chamamos a função createDialogForm(), passando como parametro o caminho da tela
 		 * e o Stage da tela principal, que esta no parentStage,*/
 		Stage parentStage = Utils.currentStage(event);
-		createDialogForm("/gui/DepartmentForm.fxml", parentStage);
+		/*ALTERAÇÃO REALIZADA NA FUNÇÃO
+		 * agora assim que a função for chamada, sera instanciado um novo objeto
+		 * do tipo "Department" vazio, em seguida é passado como parametro na 
+		 * função createDialogForm, ficando como uma injeção de dependencia*/
+		
+		Department obj = new Department();
+		createDialogForm(obj,"/gui/DepartmentForm.fxml", parentStage);
 	}
 	
 	public void setDepartmentService(DepartmentService service)
@@ -99,7 +105,7 @@ public class DepartmentListController implements Initializable
 		tableViewDepartment.setItems(obsList); //seta os valores da obslist na tela
 	}
 	
-	private void createDialogForm(String absoluteName,Stage parentStage)
+	private void createDialogForm(Department obj,String absoluteName,Stage parentStage)
 	{
 		/*função responsavel pela criação de uma nova tela.
 		 * Tem como parametro o caminho da tela (deve ser informada pelo programador), e um 
@@ -119,8 +125,21 @@ public class DepartmentListController implements Initializable
 			 * quando o usuario clicar fora da tela não sera permitido, e por fim assim que a tela for
 			 * chamada sera mantida ate que seja fechada pelo usuário 
 			 * */
-			Stage dialogStage = new Stage(); //objeto responsavel pela tela
 			
+			/*ALTERAÇÃO FEITA NA FUNÇÃO
+			 * agora a função tem uma dependencia do tipo "Department" como parametro
+			 
+			 As linhas abaixo são a injeção de dependencia da classe "Department"
+			 então foi criado uma referencia do tipo "DepartmentFormController" - controller
+			 essa referencia pega os controladores da tela e em seguida injeta a dependencia
+			 Fazendo um setDepartment(obj) passando o "Department" do parametro
+			 e em seguida um updateFormData, que é captura para os txtField Id e Name
+			 */
+			DepartmentFormController controller = loader.getController();
+			controller.setDepartment(obj);
+			controller.updateFormData();
+			
+			Stage dialogStage = new Stage(); //objeto responsavel pela tela
 			dialogStage.setTitle("Enter Department data"); //titulo da tela
 			dialogStage.setScene(new Scene(pane)); // novo palco
 			dialogStage.setResizable(false); //não redimensionavel
