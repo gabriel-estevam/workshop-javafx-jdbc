@@ -1,18 +1,27 @@
 package gui;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import application.Main;
+import gui.util.Alerts;
+import gui.util.Utils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.entities.Department;
 import model.services.DepartmentService;
@@ -38,9 +47,17 @@ public class DepartmentListController implements Initializable
 	private ObservableList<Department> obsList;
 	
 	@FXML
-	public void onBtNewAction()
+	public void onBtNewAction(ActionEvent event)
 	{
-		System.out.println("OnBtNewAction");
+		/*Essa função passa a ter um parametro do tipo ActionEvent, que sera fundamental
+		 * para usarmos como parametro na função currentStage() da classe Utils,
+		 * Em seguida declaramos um objeto do tipo "Stage" que chama a a função currentStage da classe Utils
+		 * esse Stage basicamente tem todos os recursos da tela principal, que sera usado como parametro na função
+		 * createDialogForm
+		 * Em seguida chamamos a função createDialogForm(), passando como parametro o caminho da tela
+		 * e o Stage da tela principal, que esta no parentStage,*/
+		Stage parentStage = Utils.currentStage(event);
+		createDialogForm("/gui/DepartmentForm.fxml", parentStage);
 	}
 	
 	public void setDepartmentService(DepartmentService service)
@@ -80,5 +97,40 @@ public class DepartmentListController implements Initializable
 		List<Department> list = service.findAll(); //pega os dados do banco
 		obsList = FXCollections.observableArrayList(list); //carrega os dados do banco na obslist
 		tableViewDepartment.setItems(obsList); //seta os valores da obslist na tela
+	}
+	
+	private void createDialogForm(String absoluteName,Stage parentStage)
+	{
+		/*função responsavel pela criação de uma nova tela.
+		 * Tem como parametro o caminho da tela (deve ser informada pelo programador), e um 
+		 * Stage "parentStage", esse parametro sera fundamental, alem de ser a tela principal,
+		 * vamos usar como parametro na função initOnwer() essa função nos retorna quem é o 
+		 * stage pai da janela que esta sendo criada.*/
+		try 
+		{
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(absoluteName)); //instanciamos um FXML
+			Pane pane = loader.load(); //declarado um obj do tipo Pane que recebe os recursos do obj "loader"
+			
+			/*dialogStage
+			 * Abaixo estamos criando um novo palco (nova janela), nele configuramos todos os parametros
+			 * necessario para o seu funcionamento, sendo eles: 
+			 * Titulo, criação de um novo palco (que é a tela), definimos que não sera redimensionavel,
+			 * definimos que é seu owner (stage pai da tela atual), definomos que sera modal, isto é 
+			 * quando o usuario clicar fora da tela não sera permitido, e por fim assim que a tela for
+			 * chamada sera mantida ate que seja fechada pelo usuário 
+			 * */
+			Stage dialogStage = new Stage(); //objeto responsavel pela tela
+			
+			dialogStage.setTitle("Enter Department data"); //titulo da tela
+			dialogStage.setScene(new Scene(pane)); // novo palco
+			dialogStage.setResizable(false); //não redimensionavel
+			dialogStage.initOwner(parentStage); //informamos o pai da tela atual
+			dialogStage.initModality(Modality.WINDOW_MODAL); //sera modal
+			dialogStage.showAndWait(); //mantem a tela apos ser chamada
+		}
+		catch(IOException e)
+		{
+			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
+		}
 	}
 }
