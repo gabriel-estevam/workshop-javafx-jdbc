@@ -5,7 +5,10 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import com.mysql.jdbc.UpdatableResultSet;
+
 import application.Main;
+import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Utils;
 import javafx.collections.FXCollections;
@@ -26,7 +29,7 @@ import javafx.stage.Stage;
 import model.entities.Department;
 import model.services.DepartmentService;
 
-public class DepartmentListController implements Initializable
+public class DepartmentListController implements Initializable, DataChangeListener
 {
 	private DepartmentService service; //declarado uma dependencia na classe
 	//essa dependencia tem ser injetada sem colocar a implementação da classe
@@ -143,6 +146,7 @@ public class DepartmentListController implements Initializable
 			DepartmentFormController controller = loader.getController();
 			controller.setDepartment(obj);
 			controller.setDepartmentService(new DepartmentService()); //injeta a dependencia do serivço
+			controller.subscribeDataChangeListener(this);
 			controller.updateFormData();
 			
 			Stage dialogStage = new Stage(); //objeto responsavel pela tela
@@ -157,5 +161,13 @@ public class DepartmentListController implements Initializable
 		{
 			Alerts.showAlert("IO Exception", "Error loading view", e.getMessage(), AlertType.ERROR);
 		}
+	}
+
+	@Override
+	public void onDataChanged() 
+	{
+		/*A implementação chama a função updateTableView() que é responsavel por atualizar os dados
+		 * da tabela*/
+		updateTableView();
 	}
 }

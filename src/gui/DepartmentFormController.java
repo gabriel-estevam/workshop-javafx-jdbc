@@ -1,19 +1,22 @@
 package gui;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import db.DbException;
+import gui.listeners.DataChangeListener;
 import gui.util.Alerts;
 import gui.util.Constraints;
 import gui.util.Utils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
 import model.entities.Department;
 import model.services.DepartmentService;
 
@@ -24,6 +27,8 @@ public class DepartmentFormController implements Initializable{
 	
 	private DepartmentService service;//dependencia para o departmentService, para usar as operações da classe
 	//tem que injetar na classe DepartmentListController
+	
+	private List<DataChangeListener> dataChangeListeners = new ArrayList<>();
 	
 	//atributos da tela a serem controlados
 	@FXML
@@ -40,6 +45,21 @@ public class DepartmentFormController implements Initializable{
 	
 	@FXML
 	private Button btCancel;
+	
+	public void setDepartment(Department entity) {
+		//Esse metodo recebe um department, tendo uma instancia do departamento
+		this.entity = entity;
+	}
+	
+	public void setDepartmentService(DepartmentService service) {
+		this.service = service;
+	}
+	
+	public void subscribeDataChangeListener(DataChangeListener listener) {
+		//função responsavel por sobreescrever um objeto listener na lista
+		//de DataChaangeListeners (lista de listeners)
+		dataChangeListeners.add(listener);
+	}
 	
 	@FXML
 	public void onBtSaveAction(ActionEvent event)
@@ -67,6 +87,7 @@ public class DepartmentFormController implements Initializable{
 			
 			entity = getFormData(); //recebe as informações
 			service.saveOrUpdate(entity); //chama o serviço com o banco de dados
+			notifyDataChangeListeners();
 			Utils.currentStage(event).close(); //fecha a tela
 			//como é uma operação com o banco, então pode gerar exception, então 
 			//foi necessario colocar em ty-cath, sendo o cath a exception personalida (DbException)
@@ -77,6 +98,18 @@ public class DepartmentFormController implements Initializable{
 		}
 	}
 	
+	private void notifyDataChangeListeners() 
+	{
+		/*Função responsavel por "notificar" a lista de listener assim que
+		 * um novo obj do tipo listener foi adcionado
+		 */
+		for(DataChangeListener listener : dataChangeListeners)
+		{
+			//foreach para percorre, atualizando a lista de listeners
+			listener.onDataChanged();
+		}
+	}
+
 	private Department getFormData() 
 	{
 		/*metodo responsavel por pegar os dados do formulario e passar para 
@@ -103,15 +136,6 @@ public class DepartmentFormController implements Initializable{
 		//o metodo agora tem um ActonEvent como parametro, para fechar a janela
 		//ao clicar em cancelar
 		Utils.currentStage(event).close();
-	}
-	
-	public void setDepartment(Department entity) {
-		//Esse metodo recebe um department, tendo uma instancia do departamento
-		this.entity = entity;
-	}
-	
-	public void setDepartmentService(DepartmentService service) {
-		this.service = service;
 	}
 	
 	@Override
