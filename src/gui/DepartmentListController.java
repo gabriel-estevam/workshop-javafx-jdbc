@@ -135,8 +135,14 @@ public class DepartmentListController implements Initializable
 			 Fazendo um setDepartment(obj) passando o "Department" do parametro
 			 e em seguida um updateFormData, que é captura para os txtField Id e Name
 			 */
+			
+			/*ALTERAÇÃO FEITA NA FUNÇÃO
+			 * agora a função tem injeção de dependencia com DepartmentService
+			 */
+			
 			DepartmentFormController controller = loader.getController();
 			controller.setDepartment(obj);
+			controller.setDepartmentService(new DepartmentService()); //injeta a dependencia do serivço
 			controller.updateFormData();
 			
 			Stage dialogStage = new Stage(); //objeto responsavel pela tela

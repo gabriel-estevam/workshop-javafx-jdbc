@@ -3,18 +3,27 @@ package gui;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import db.DbException;
+import gui.util.Alerts;
 import gui.util.Constraints;
+import gui.util.Utils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
 import model.entities.Department;
+import model.services.DepartmentService;
 
 public class DepartmentFormController implements Initializable{
 	//Classe controladora da tela de Cadastro de departamentos
 	
 	private Department entity; //dependencia para o departamento, é a entidade relacionada a esse formulario
+	
+	private DepartmentService service;//dependencia para o departmentService, para usar as operações da classe
+	//tem que injetar na classe DepartmentListController
 	
 	//atributos da tela a serem controlados
 	@FXML
@@ -33,22 +42,76 @@ public class DepartmentFormController implements Initializable{
 	private Button btCancel;
 	
 	@FXML
-	public void onBtSaveAction()
+	public void onBtSaveAction(ActionEvent event)
 	{
-		//função de ação do botão de salvar, por enquanto retona uma msg no console
-		System.out.println("onBtSaveAction");
+		//metodo passa a ter um parametro do tip ActionEvent, para fechar a janela
+		
+		if(entity == null) {
+			//programação defensiva, caso o programador venha a esquecer de injetar a entidade
+			//na classe controladora
+			throw new IllegalStateException("Entity was null");
+		}
+		
+		if(service == null) {
+			//programação defensiva, caso o programador venha a esquecer de injetar o serviço
+			//na classe controladora
+			throw new IllegalStateException("Service was null");
+		}
+		try 
+		{
+			/*O entity vai receber os dados da função getformData, que é um novo obj com
+			 os dados carregados do formulário.
+			 Depois chama o serviço passando como parametro o entity, salvando no banco de dados
+			 em seguida fecha a janela
+			 */
+			
+			entity = getFormData(); //recebe as informações
+			service.saveOrUpdate(entity); //chama o serviço com o banco de dados
+			Utils.currentStage(event).close(); //fecha a tela
+			//como é uma operação com o banco, então pode gerar exception, então 
+			//foi necessario colocar em ty-cath, sendo o cath a exception personalida (DbException)
+		}
+		catch(DbException e) 
+		{
+			Alerts.showAlert("Error saving object", null, e.getMessage(), AlertType.ERROR); //lança uma alert
+		}
 	}
 	
-	@FXML
-	public void onBtCancelAction()
+	private Department getFormData() 
 	{
-		//função de ação do botão de ação de cancelar, por enquanto retorna uma msg no console
-		System.out.println("onBtCancelAction");
+		/*metodo responsavel por pegar os dados do formulario e passar para 
+		 * o departamento
+		 * então instanciamos um Department
+		 * em seguida chamamos a função setId, usando a função tryParToInt que foi
+		 * criada na classe Utils para assim ativar o mecanismo da função:
+		 * caso o deparmento esteja null, passa como nulo, caso tenha valor, passa o valor
+		 * para entidade.
+		 * 
+		 * Em seguida seta o nome e por fim retorna obj
+		 */
+		Department obj = new Department();
+		
+		obj.setId(Utils.tryParseToInt(txtId.getText()));
+		obj.setName(txtName.getText());
+		
+		return obj;
+	}
+
+	@FXML
+	public void onBtCancelAction(ActionEvent event)
+	{
+		//o metodo agora tem um ActonEvent como parametro, para fechar a janela
+		//ao clicar em cancelar
+		Utils.currentStage(event).close();
 	}
 	
 	public void setDepartment(Department entity) {
 		//Esse metodo recebe um department, tendo uma instancia do departamento
 		this.entity = entity;
+	}
+	
+	public void setDepartmentService(DepartmentService service) {
+		this.service = service;
 	}
 	
 	@Override

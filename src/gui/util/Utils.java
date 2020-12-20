@@ -16,4 +16,16 @@ public class Utils
 	{
 		return (Stage) ((Node)event.getSource()).getScene().getWindow();
 	}
+	
+	public static Integer tryParseToInt(String str)
+	{
+		//esse metodo ajuda a converter o valor da caixinha txtField para inteiro
+		//caso o valor da caixinha não seja valido, ele retona um valor nulo
+		try {
+			return Integer.parseInt(str);
+		}
+		catch(NumberFormatException e) {
+			return null;
+		}
+	}
 }
