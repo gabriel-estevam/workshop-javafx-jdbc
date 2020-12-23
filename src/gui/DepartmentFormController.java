@@ -3,7 +3,9 @@ package gui;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import db.DbException;
 import gui.listeners.DataChangeListener;
@@ -18,6 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import model.entities.Department;
+import model.exceptions.ValidationException;
 import model.services.DepartmentService;
 
 public class DepartmentFormController implements Initializable{
@@ -92,6 +95,13 @@ public class DepartmentFormController implements Initializable{
 			//como é uma operação com o banco, então pode gerar exception, então 
 			//foi necessario colocar em ty-cath, sendo o cath a exception personalida (DbException)
 		}
+		catch(ValidationException e)
+		{
+			/*Implementado a função para setar a mensagem de erro ao usuario, quando ele não preencher o campo
+			 * name, para chamamos a função setErrorMessage, criada nesse classe, e passamos um catch do tipo
+			 * ValidationException, e retornamos a mensagem de erro ao usuário*/
+			setErrorMessages(e.getErrors());
+		}
 		catch(DbException e) 
 		{
 			Alerts.showAlert("Error saving object", null, e.getMessage(), AlertType.ERROR); //lança uma alert
@@ -123,9 +133,35 @@ public class DepartmentFormController implements Initializable{
 		 * Em seguida seta o nome e por fim retorna obj
 		 */
 		Department obj = new Department();
+		/*ALTERAÇÃO FEITA NA FUNÇÃO
+		 * Instaciamos um obj ValdationException que vai validar o campo name desse formulario
+		 * FUNCIONAMENTO: 
+		 * primeiro vamos validar se o textField esta nulo ou se so contem espaços em brancos
+		 * Caso tenha, adiciona na coleção de erros (exception) que instanciamos acima, informando
+		 * o nome do campo e a msg de erro;
+		 * 
+		 * ja a segunda validação, vamos verificar se na coleção exception ja existe 
+		 * algum erro nela, se sim lança a exception
+		 * */
+		ValidationException exception = new ValidationException("Validation error"); //instaciando um obj da classe ValidationException
 		
 		obj.setId(Utils.tryParseToInt(txtId.getText()));
+		
+		if(txtName.getText() == null || txtName.getText().trim().equals(" "))
+		{
+			//vai validar o textfield se esta nulo ou se so contem espaços em branco
+			exception.addError("name", "Field can't be empty"); //caso uma das duas condições atenda, add a coleção excetion
+			//o campo e a msg de erro
+		}
+		
 		obj.setName(txtName.getText());
+		
+		if(exception.getErrors().size() > 0 )
+		{
+			//verifica se a coleção ja contem um erro adicionado na coleção de exception, caso tenha
+			//lança a exception
+			throw exception; //lança uma nova exceção 
+		}
 		
 		return obj;
 	}
@@ -166,5 +202,23 @@ public class DepartmentFormController implements Initializable{
 		
 		txtId.setText(String.valueOf(entity.getId()));
 		txtName.setText(entity.getName());
+	}
+	
+	private void setErrorMessages(Map<String,String> errors)
+	{
+		/*Função para setar uma mensagem de erro ao usuário
+		 * FUNCIONAMENTO:
+		 *Tem como parametro uma coleção do tipo Map, para capturar a coleção de erro, na sequencia
+		 *criado uma coleção do tipo Set "fields" para percorrer a coleção passada como parametro
+		 *na seguencia é validado essa coleção (set), se contem a chave "name", que é o nome do campo textfield
+		 *do formulario, caso contenha vai setar a msg de exceção na labelErrorName  
+		 */
+		Set<String> fields = errors.keySet(); //coleção do tipo set para percorrer a coleção que vem do parametro da função
+		
+		if(fields.contains("name"))
+		{
+			//validda se a coleção do Set contem o nome do campo do formulario
+			labelErrorName.setText(errors.get("name"));
+		}
 	}
 }
