@@ -142,25 +142,39 @@ public class DepartmentFormController implements Initializable{
 		 * 
 		 * ja a segunda validação, vamos verificar se na coleção exception ja existe 
 		 * algum erro nela, se sim lança a exception
+		 * 
+		 * 
+		 * ALTERAÇÃO FEITA NA OPERAÇÃO DE VALIDAÇÃO:
+		 * Optei por alterar a validação do formulário, agora
+		 * no primeiro if abaixo, coloquei um else,pois percebi que
+		 * mesmo que o textfield do Name estivesse espaço em branco,space, ele lançava a exceção
+		 * porem fazia um set ao banco de dados normalmente, mesmo estando vazio, visto que
+		 * a operação de setar um dado em branco,contendo apenas space, é totalmente valida pelo
+		 * MYSQL pois o mesmo considera. Portanto agora para salvar dados no banco sera necessário
+		 * pelo menos um caracter de entrada
 		 * */
 		ValidationException exception = new ValidationException("Validation error"); //instaciando um obj da classe ValidationException
 		
 		obj.setId(Utils.tryParseToInt(txtId.getText()));
 		
-		if(txtName.getText() == null || txtName.getText().trim().equals(" "))
+		if(txtName.getText() == null || txtName.getText().trim().equals(""))
 		{
 			//vai validar o textfield se esta nulo ou se so contem espaços em branco
-			exception.addError("name", "Field can't be empty"); //caso uma das duas condições atenda, add a coleção excetion
+			exception.addError("name", "Field can't be empty"); //caso uma das duas condições atenda, add a coleção exception
 			//o campo e a msg de erro
+		} 
+		else 
+		{
+			/*ALTERAÇÃO: agora para salvar no banco, sera necessário o usuario informar pelo menos
+			 * um caracter, caso contrario lança a exceção do if*/
+			obj.setName(txtName.getText());
 		}
-		
-		obj.setName(txtName.getText());
 		
 		if(exception.getErrors().size() > 0 )
 		{
 			//verifica se a coleção ja contem um erro adicionado na coleção de exception, caso tenha
 			//lança a exception
-			throw exception; //lança uma nova exceção 
+			throw exception; //lança uma nova exceção
 		}
 		
 		return obj;
