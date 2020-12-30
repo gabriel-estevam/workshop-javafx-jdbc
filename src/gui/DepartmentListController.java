@@ -185,7 +185,15 @@ public class DepartmentListController implements Initializable, DataChangeListen
 	
 	private void initEditButtons()
 	{
-		/*Essa função cria um botão para cada linha (registro) da tabela department*/
+		/*Essa função cria um botão de edição para cada linha (registro) da tabela department
+		 * Para o funcionamento dessa função foi necessário criar um atributo (tableColumn) FXML na tableView 
+		 * que vai ficar responsavel pelos botões de edição de cada registro
+		 * para o funcionamento do botão, foi necessario customizar o cell Factory da coluna tableColumnEDIT para
+		 * que cada registro tenha seu botão de edição
+		 * 
+		 * na ação do botão de edição (edit) vamos abrir a janela DepartmentForm.xml com os dados da tableview
+		 * preencidos, ficando possivel a edição do registro
+		 * */
 		
 		tableColumnEDIT.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
 		tableColumnEDIT.setCellFactory(param -> new TableCell<Department, Department>() {
@@ -212,6 +220,10 @@ public class DepartmentListController implements Initializable, DataChangeListen
 	
 	private void initRemoveButtons()
 	{
+		/*Função responsavel por criar botão de remover para cada registro
+		 * da tableview e relizar a remoção atraves da função removeEntity()
+		 * 
+		 * */
 		tableColumnREMOVE.setCellValueFactory(param -> new ReadOnlyObjectWrapper<>(param.getValue()));
 		tableColumnREMOVE.setCellFactory(param -> new TableCell<Department, Department>(){
 			private final Button button = new Button("remove");
@@ -235,17 +247,27 @@ public class DepartmentListController implements Initializable, DataChangeListen
 
 	private void removeEntity(Department obj) 
 	{
+		/*Função responsavel por remover um departmento (entity) do banco de dados
+		 * recebe como argumento um departmento
+		 * 
+		 * Primeiro é mostra um Alert ao usuario para ele confirmar ou não
+		 * 
+		 * Caso o usuario tenha clicado em Ok, remove o registro
+		 * */
 		Optional<ButtonType> result = Alerts.showConfirmation("Confirmation", "Are you sure to delete?");
-		if(result.get() == ButtonType.OK)
+		if(result.get() == ButtonType.OK) //testa se o usuario clicou em ok
 		{
 			if(service == null)
 			{
+				//programação defensiva para verificar se foi injetado o serviço
 				throw new IllegalStateException("Service was null");
 			}
+			
 			try 
 			{
-				service.remove(obj);
-				updateTableView();
+				//essa operação pode gerar uma exception
+				service.remove(obj); //faz a remoção
+				updateTableView(); //atualiza a tableView
 			}
 			catch(DbIntegrityException e)
 			{
