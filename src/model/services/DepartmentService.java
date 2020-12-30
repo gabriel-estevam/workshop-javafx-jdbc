@@ -31,4 +31,10 @@ public class DepartmentService
 			dao.update(obj);
 		}
 	}
+	
+	public void remove(Department obj)
+	{
+		//função para remover um departmento do banco de dados
+		dao.deleteById(obj.getId());
+	}
 }
