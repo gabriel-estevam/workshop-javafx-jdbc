@@ -163,12 +163,7 @@ public class DepartmentFormController implements Initializable{
 			exception.addError("name", "Field can't be empty"); //caso uma das duas condições atenda, add a coleção exception
 			//o campo e a msg de erro
 		} 
-		else 
-		{
-			/*ALTERAÇÃO: agora para salvar no banco, sera necessário o usuario informar pelo menos
-			 * um caracter, caso contrario lança a exceção do if*/
-			obj.setName(txtName.getText());
-		}
+		obj.setName(txtName.getText());
 		
 		if(exception.getErrors().size() > 0 )
 		{

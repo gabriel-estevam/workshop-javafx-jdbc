@@ -28,16 +28,30 @@ public class Utils {
 		return (Stage) ((Node) event.getSource()).getScene().getWindow();
 	}
 
-	public static Integer tryParseToInt(String str) {
+	public static Integer tryParseToInt(String str) 
+	{
 		// esse metodo ajuda a converter o valor da caixinha txtField para inteiro
 		// caso o valor da caixinha não seja valido, ele retona um valor nulo
 		try {
 			return Integer.parseInt(str);
-		} catch (NumberFormatException e) {
+		} 
+		catch (NumberFormatException e) {
 			return null;
 		}
 	}
 
+	public static Double tryParseToDouble(String str) 
+	{
+		//metodo para converter um valor, que vem do campo e tenta converter para double
+		try {
+			return Double.parseDouble(str);
+		} 
+		catch (NumberFormatException e) 
+		{
+			return null;
+		}
+	}
+	
 	public static <T> void formatTableColumnDate(TableColumn<T, Date> tableColumn, String format) {
 		/*
 		 * metodo para formatar data tem como parametro um obj do tipo TableColumn<>,

@@ -1,9 +1,11 @@
 package gui;
 
 import java.net.URL;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -139,20 +141,38 @@ public class SellerFormController implements Initializable
 
 	private Seller getFormData() 
 	{
+		//metodo responsavel por pegar os dados no formulario e carregar no obj seller
 		Seller obj = new Seller();
-		
+	
 		ValidationException exception = new ValidationException("Validation error");
 		
 		obj.setId(Utils.tryParseToInt(txtId.getText()));
 		
-		if(txtName.getText() == null || txtName.getText().trim().equals("")) 
-		{
-			exception.addError("name", "Field can't be empty");
+		if(txtName.getText() == null || txtName.getText().trim().equals("")) {
+			exception.addError("name", "Field can't be empty"); //valida o campo name
 		} 
-		else 
-		{
-			obj.setName(txtName.getText());
+		obj.setName(txtName.getText()); //caso esteja preenchido, seta o nome ao obj
+		
+		if(txtEmail.getText() == null || txtEmail.getText().trim().equals("")) {
+			exception.addError("email", "Field can't be empty"); //valida o campo email
 		}
+		obj.setEmail(txtEmail.getText()); //caso esteja preencido, seta o valor para o obj
+		
+		if(dptBirthDate.getValue() == null) {
+			exception.addError("birthDate", "Field can't be empty"); //valida se o datePicker esta nulo
+		}
+		else {
+			//pegando valor do datePicker, tem que ser um uma variavel do tipo Instant
+			Instant instant = Instant.from(dptBirthDate.getValue().atStartOfDay(ZoneId.systemDefault()));
+			obj.setBirthDate(Date.from(instant)); //Date.From() converte o instant por Date
+		}
+		
+		if(txtBaseSalary.getText() == null || txtBaseSalary.getText().trim().equals("")) {
+			exception.addError("baseSalary", "Field can't be empty"); //valida se o campo esta vazio
+		}
+		obj.setBaseSalary(Utils.tryParseToDouble(txtBaseSalary.getText())); //caso contrario, seta o salario
+		
+		obj.setDepartment(comboBoxDepartment.getValue());
 		
 		if(exception.getErrors().size() > 0 ) {
 			throw exception;
@@ -240,10 +260,18 @@ public class SellerFormController implements Initializable
 	private void setErrorMessages(Map<String,String> errors)
 	{
 		Set<String> fields = errors.keySet();
-		
-		if(fields.contains("name")) {
-			labelErrorName.setText(errors.get("name"));
-		}
+		/*ALTERAÇÃO RELAIZADA NA FUNÇÃO,
+		 * removido os if's e colocado operador condicional ternario direto no setText. Portanto,
+		 * cada label, verifica se o campo foi preencido
+		 * fields.contains("campo") ? error.get("campo") - exibe o label com a mensagem de erro
+		 *  : "" não mostra nada
+		 * OU caso o usuario tenha esquecido de preencher e o mesmo volte a preencher mas esquece 
+		 * o proximo campo... o label da msg de erro é apagado
+		 * */
+		labelErrorName.setText((fields.contains("name") ? errors.get("name") : ""));
+		labelErrorEmail.setText((fields.contains("email") ? errors.get("email")  : ""));
+		labelErrorBirthDate.setText((fields.contains("birthDate") ? errors.get("birthDate") : ""));
+		labelErrorBaseSalary.setText((fields.contains("baseSalary") ? errors.get("baseSalary") : ""));	
 	}
 	
 	
